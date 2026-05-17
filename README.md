@@ -25,8 +25,8 @@ Every pricing function is validated against QuantLib to **1.35 × 10⁻¹²** ma
 11. [API reference](#api-reference)
 12. [Testing](#testing)
 13. [Design system](#design-system)
-14. [Deploy](#deploy-free)
-15. [Roadmap](#roadmap)
+14. [Roadmap](#roadmap)
+15. [Hosting](#hosting)
 16. [License](#license)
 
 ---
@@ -74,6 +74,10 @@ A production desk system. Things a real options platform has that Vol Lab does n
 - **Risk system.** No portfolio aggregation, VaR, CVA, scenario PnL, model risk monitoring, intraday attribution.
 - **Production ops.** No auth, no rate limiting, no observability stack (Sentry, OpenTelemetry, structured logs), no quota tracking.
 - **The "live" ticker tape** in the top bar is a simulated random walk, not a real feed. The chain-fetched ticker prices are real.
+
+Caveats specific to the **live demo**:
+- The backend runs on Render's free tier, which sleeps after 15 minutes idle. First request after sleep cold-starts in 30 to 60 seconds. To wake it, open the [Swagger docs](https://vollab-backend.onrender.com/api/v1/docs) first.
+- Yahoo throttles yfinance requests from shared cloud IPs. When that happens the Vol Surface page falls back to demo data so the UI still renders. Real desks use Polygon, IEX, or a direct feed in `backend/app/data/chain.py`.
 
 Treat it as an engineering build that demonstrates fundamentals correctly.
 
@@ -516,50 +520,6 @@ Three custom UI touches worth calling out:
 
 ---
 
-## Deploy (free)
-
-Easiest path: **Vercel for the frontend, Render for the backend**. Both have generous free tiers. ~5 minutes once the repo is on GitHub.
-
-### 1. Backend on Render
-
-- Sign in at [render.com](https://render.com)
-- **New + → Blueprint** → connect your GitHub repo
-- Render reads [`render.yaml`](render.yaml) at the repo root and provisions a free Python web service
-- Build takes ~3 minutes (NumPy and SciPy compile)
-- Copy the live URL, e.g. `https://vollab-backend.onrender.com`
-
-### 2. Frontend on Vercel
-
-- Sign in at [vercel.com](https://vercel.com)
-- **Add New + → Project** → import the repo
-- Set **Root Directory** to `frontend` (important; without this it tries to build at the repo root)
-- Add env var `NEXT_PUBLIC_API_URL` = your Render URL from step 1
-- Deploy. ~2 minutes.
-
-### 3. Wire CORS
-
-- Copy the Vercel URL (e.g. `https://options-pricing.vercel.app`)
-- Back on Render → service → Environment → set `CORS_ORIGINS` to your Vercel URL (no trailing slash)
-- Render auto-redeploys
-
-### Gotchas
-
-- **Render free tier sleeps after 15 minutes of no traffic.** First request after sleep cold-starts in 30 to 60 seconds. Fine for a demo, not for production. Pay $7/mo for always-on, or use Railway (~$5/mo, no cold starts).
-- **SQLite cache is ephemeral** on free tier. No persistent disk. Chains re-fetch from yfinance after each restart. Not a correctness issue; the cache is just an optimization.
-- **yfinance from cloud IPs** gets rate-limited or briefly blocked sometimes. Yahoo throttles shared IP ranges. The Surface page falls back to demo data when the backend errors so the UI still renders. If you see this frequently, swap to a real feed (Polygon, IEX) in `backend/app/data/chain.py`.
-- **QuantLib is not installed in production.** It's only needed by `backend/scripts/validate.py` for regenerating the validation report locally.
-
-### Alternatives
-
-| Option | Pros | Cons |
-|---|---|---|
-| **Railway** (both services) | No cold starts, simpler dashboard | ~$5/mo minimum after $5 trial credit |
-| **Fly.io** (both services) | Generous free tier, no cold starts, near-user regions | More setup; use the included `backend/Dockerfile` |
-| **Self-host on a VPS** (DigitalOcean, Hetzner, etc.) | Most control, persistent disk, real domain | Need to manage TLS, updates, monitoring yourself. `docker compose up --build` |
-| **Single Vercel deploy** (Python serverless function for backend) | One platform | NumPy + SciPy + yfinance bundle exceeds Vercel's 50 MB serverless limit on free tier |
-
----
-
 ## Roadmap
 
 Concrete v0.2 candidates, in rough priority order:
@@ -576,6 +536,12 @@ Concrete v0.2 candidates, in rough priority order:
 - [ ] **Mobile layout** (currently degrades gracefully below 1024px; could be designed properly).
 
 Issue tracker: https://github.com/peterh2004/options-pricing/issues
+
+---
+
+## Hosting
+
+The live demo runs on **Vercel** (frontend) + **Render** (backend), both free tier. The repo includes [`render.yaml`](render.yaml) and [`frontend/vercel.json`](frontend/vercel.json) so a fork deploys with no config: import the repo into each platform, set `NEXT_PUBLIC_API_URL` on Vercel to your Render URL, and set `CORS_ORIGINS` on Render to your Vercel URL. For always-on (no cold starts) consider Railway or Fly.io; for full control use the included `docker-compose.yml` on any VPS.
 
 ---
 

@@ -6,7 +6,7 @@ Every pricing function is validated against QuantLib to **1.35 × 10⁻¹²** ma
 
 > **Live demo:** https://vol-lab.vercel.app · **API:** https://vollab-backend.onrender.com/api/v1/docs · **Repo:** https://github.com/peterh2004/options-pricing
 >
-> _First request after 15 min idle cold-starts the backend (~30-60s on Render free tier). Open the Swagger link first to wake it up if the frontend looks broken._
+> _Render's free tier sleeps after 15 min idle (first request cold-starts in 30 to 60s; open the Swagger link to wake it). Yahoo sometimes throttles yfinance from cloud IPs; when that happens the Vol Surface page falls back to demo data so the UI still renders._
 
 ---
 
@@ -14,18 +14,17 @@ Every pricing function is validated against QuantLib to **1.35 × 10⁻¹²** ma
 
 1. [What it does](#what-it-does)
 2. [Why I built it](#why-i-built-it)
-3. [What it is not](#what-it-is-not)
-4. [Stack](#stack)
-5. [Validation](#validation)
-6. [Performance](#performance)
-7. [Local development](#local-development)
-8. [Project layout](#project-layout)
-9. [Architecture](#architecture)
-10. [API reference](#api-reference)
-11. [Testing](#testing)
-12. [Roadmap](#roadmap)
-13. [Hosting](#hosting)
-14. [License](#license)
+3. [Stack](#stack)
+4. [Validation](#validation)
+5. [Performance](#performance)
+6. [Local development](#local-development)
+7. [Project layout](#project-layout)
+8. [Architecture](#architecture)
+9. [API reference](#api-reference)
+10. [Testing](#testing)
+11. [Roadmap](#roadmap)
+12. [Hosting](#hosting)
+13. [License](#license)
 
 ---
 
@@ -54,28 +53,6 @@ Engineering goals, in priority order:
 2. **Speed.** Surface compute under 200ms because real desks rebuild surfaces several times per second. Single price under 1ms. MC with 10k antithetic paths under 100ms. Achieved with vectorized NumPy.
 3. **Schemas everywhere.** Pydantic v2 on the backend, Zod-mirrored on the frontend. Every API response is parsed through a schema; no untyped JSON in the React tree.
 4. **Tight UI.** 32-36px row heights, 1px hairlines, mono for every number with `tabular-nums`, semantic color bound to meaning (green up/calls, red down/puts, amber warnings). Custom micro-visualizations for each Greek instead of generic sparklines.
-
----
-
-## What it is not
-
-A production desk system. Things a real options platform has that Vol Lab does not:
-
-- **Live tick data.** yfinance is the only data source. First-call latency is 1-3 seconds; quotes can be stale or missing. Real desks subscribe to Polygon, Refinitiv, ICE, or direct exchange feeds with millisecond updates.
-- **Arb-free smile fits.** Linear interpolation between IV samples. Production uses SVI or SSVI parametric fits to guarantee no calendar-spread or butterfly arbitrage.
-- **Beyond Black-Scholes-Merton.** No Heston stochastic volatility, no local vol, no rough vol, no jump-diffusion.
-- **Exotic Greeks.** Just the standard five (delta, gamma, vega, theta, rho). No vanna, volga, charm, color, speed, ultima.
-- **Discrete dividends.** Only continuous dividend yield `q`.
-- **Better American Greeks.** Tree-derived delta and gamma from the second time-step; vega and rho fall back to closed-form BS. Production replaces with PSOR or Longstaff-Schwartz.
-- **Continuous-monitoring barrier correction.** MC barrier pricer uses discrete monitoring. Over-prices knock-outs by a few bps for short expiries (missing Broadie-Glasserman-Kou correction).
-- **Term-structure interest rates.** Flat `r` only.
-- **Risk system.** No portfolio aggregation, VaR, CVA, scenario PnL, model risk monitoring, intraday attribution.
-- **Production ops.** No auth, no rate limiting, no observability stack (Sentry, OpenTelemetry, structured logs), no quota tracking.
-- **The "live" ticker tape** in the top bar is a simulated random walk, not a real feed. The chain-fetched ticker prices are real.
-
-Caveats specific to the **live demo**:
-- The backend runs on Render's free tier, which sleeps after 15 minutes idle. First request after sleep cold-starts in 30 to 60 seconds. To wake it, open the [Swagger docs](https://vollab-backend.onrender.com/api/v1/docs) first.
-- Yahoo throttles yfinance requests from shared cloud IPs. When that happens the Vol Surface page falls back to demo data so the UI still renders. Real desks use Polygon, IEX, or a direct feed in `backend/app/data/chain.py`.
 
 ---
 

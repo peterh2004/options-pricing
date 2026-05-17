@@ -4,7 +4,7 @@ A locally-runnable options pricing and strategy analytics workbench. Black-Schol
 
 Every pricing function is validated against QuantLib to **1.35 × 10⁻¹²** maximum relative error, and the full suite is covered by **77 unit tests** that run in under 10 seconds.
 
-> **Live demo:** https://options-pricing-rose.vercel.app · **API:** https://vollab-backend.onrender.com/api/v1/docs · **Repo:** https://github.com/peterh2004/options-pricing
+> **Live demo:** https://vol-lab.vercel.app · **API:** https://vollab-backend.onrender.com/api/v1/docs · **Repo:** https://github.com/peterh2004/options-pricing
 >
 > _First request after 15 min idle cold-starts the backend (~30-60s on Render free tier). Open the Swagger link first to wake it up if the frontend looks broken._
 

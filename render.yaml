@@ -17,6 +17,6 @@ services:
         # Comma-separate multiple origins, no trailing slash.
         # Note: editing this in the Render dashboard takes effect immediately;
         # editing here only affects future Blueprint deploys.
-        value: https://options-pricing-rose.vercel.app
+        value: https://vol-lab.vercel.app
     healthCheckPath: /api/v1/health
     autoDeploy: true

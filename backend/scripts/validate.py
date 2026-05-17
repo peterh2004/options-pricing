@@ -1,7 +1,7 @@
-"""Generate docs/validation.md. QuantLib vs Vol Lab BS reference table plus perf benchmarks.
+"""Numerical validation report: QuantLib vs Vol Lab BS reference table plus perf benchmarks.
 
 Run from backend/ via: python scripts/validate.py
-Output is written to ../docs/validation.md
+Writes a markdown report to the project's docs/ directory (gitignored, kept local).
 """
 
 from __future__ import annotations

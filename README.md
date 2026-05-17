@@ -15,19 +15,17 @@ Every pricing function is validated against QuantLib to **1.35 × 10⁻¹²** ma
 1. [What it does](#what-it-does)
 2. [Why I built it](#why-i-built-it)
 3. [What it is not](#what-it-is-not)
-4. [Screens](#screens)
-5. [Stack](#stack)
-6. [Validation](#validation)
-7. [Performance](#performance)
-8. [Local development](#local-development)
-9. [Project layout](#project-layout)
-10. [Architecture](#architecture)
-11. [API reference](#api-reference)
-12. [Testing](#testing)
-13. [Design system](#design-system)
-14. [Roadmap](#roadmap)
-15. [Hosting](#hosting)
-16. [License](#license)
+4. [Stack](#stack)
+5. [Validation](#validation)
+6. [Performance](#performance)
+7. [Local development](#local-development)
+8. [Project layout](#project-layout)
+9. [Architecture](#architecture)
+10. [API reference](#api-reference)
+11. [Testing](#testing)
+12. [Roadmap](#roadmap)
+13. [Hosting](#hosting)
+14. [License](#license)
 
 ---
 
@@ -40,7 +38,7 @@ Every pricing function is validated against QuantLib to **1.35 × 10⁻¹²** ma
 | **Strategy Builder** | Multi-leg editor backed by Zustand. Each leg is fully inline-editable (action, type, strike, DTE, qty, σ). Net Greeks aggregate live and tween over 300ms when legs change. Tabs for payoff-at-expiry and a (spot × time) P&L heatmap. Templates: vertical spread, straddle, strangle, iron condor, butterfly, calendar. Save strategy to JSON. |
 | **IV Analysis** | Four-quadrant view: realized vs implied vol time series, ATM term structure, smile/skew at a selected expiry, and the variance risk premium. |
 | **Guide** | Ten-section concept primer that maps options theory (contracts, Greeks, pricing models, smile, strategies, VRP) to where each appears in the tools. Lives at `/app/guide`. |
-| **Validation report** | In-app view of the QuantLib comparison table, Greek-by-Greek deltas, internal cross-checks, and performance benchmarks. Mirrors `docs/validation.md`. |
+| **Validation report** | In-app view of the QuantLib comparison table, Greek-by-Greek deltas, internal cross-checks, and performance benchmarks. Lives at `/app/validation`. |
 
 ---
 
@@ -80,19 +78,6 @@ Caveats specific to the **live demo**:
 - Yahoo throttles yfinance requests from shared cloud IPs. When that happens the Vol Surface page falls back to demo data so the UI still renders. Real desks use Polygon, IEX, or a direct feed in `backend/app/data/chain.py`.
 
 Treat it as an engineering build that demonstrates fundamentals correctly.
-
----
-
-## Screens
-
-Static design mockups (HTML, no backend) are checked in at [`docs/mockups/`](docs/mockups/). Open them directly in a browser:
-
-- [Vol Surface](docs/mockups/vol-surface.html) (the hero)
-- [Strategy Builder](docs/mockups/strategy-builder.html)
-- [Pricer](docs/mockups/pricer.html)
-- [IV Analysis](docs/mockups/iv-analysis.html)
-
-The actual app pages match these closely; the mockups were the design comp.
 
 ---
 
@@ -140,14 +125,7 @@ The numerical core is checked against a reference implementation on every push.
 | Asian < European call (Jensen's inequality) | always holds | holds |
 | Barrier in-out parity (`KI + KO = vanilla`) | matches to MC tolerance | within 2×stderr |
 
-Full table and methodology notes: [`docs/validation.md`](docs/validation.md).
-
-Regenerate the report:
-```bash
-cd backend && .venv/Scripts/python scripts/validate.py
-```
-
-The script compares Vol Lab's BS implementation against QuantLib's `AnalyticEuropeanEngine`, runs all internal cross-checks via the pytest suite, and writes timing benchmarks. Output is `docs/validation.md`. The in-app `/app/validation` page renders the same numbers inline.
+The in-app `/app/validation` page renders the full table inline. The script that produces these numbers (`backend/scripts/validate.py`) compares Vol Lab's BS implementation against QuantLib's `AnalyticEuropeanEngine`, runs every cross-check via the pytest suite, and reports timing benchmarks.
 
 ---
 
@@ -269,7 +247,7 @@ options-pricing/
 │   │       ├── chain.py         # yfinance chain fetcher
 │   │       └── historical.py    # Historical prices + RV math
 │   ├── tests/                   # 77 tests, pytest
-│   ├── scripts/validate.py      # Generates docs/validation.md
+│   ├── scripts/validate.py      # Runs QuantLib comparison + perf benchmarks
 │   ├── pyproject.toml
 │   └── Dockerfile
 ├── frontend/
@@ -302,11 +280,6 @@ options-pricing/
 │   ├── package.json
 │   ├── Dockerfile
 │   └── vercel.json
-├── docs/
-│   ├── mockups/                        # Static HTML design comps (Phase 1 of build)
-│   ├── design-system.md                # Color, type, spacing, components, anti-patterns
-│   ├── validation.md                   # QuantLib comparison + perf benchmarks
-│   └── architecture.md                 # System diagram + request paths + file map
 ├── docker-compose.yml
 ├── render.yaml                         # One-click Render Blueprint
 └── README.md
@@ -363,8 +336,6 @@ POST /api/v1/surface { ticker, option_type, moneyness/dte range, n_*}
 - **Greek units (everywhere).** Vega per 1 vol point (i.e. ∂V/∂σ × 0.01), rho per 1% rate, theta per calendar day. Practitioner conventions, not academic.
 - **Year fractions.** ACT/365 calendar-day year for time-to-expiry across the API. ACT/252 trading-day year only for realized-volatility annualization.
 - **Risk-free rate default.** 4.288% (3-month T-bill at v0.1.0 cut date). Overridable per request via `r` field.
-
-Full architecture doc with file map and request-path traces: [`docs/architecture.md`](docs/architecture.md).
 
 ---
 
@@ -494,29 +465,6 @@ cd backend && pytest -v          # 77 tests, ~8s
 | `test_api.py` | 9 | every endpoint smoke-tested via `TestClient`, including 422 validation rejection for negative strikes / unknown method |
 
 Tests run in deterministic mode (seeded RNG in `conftest.py`) so results are reproducible across machines.
-
----
-
-## Design system
-
-Documented in [`docs/design-system.md`](docs/design-system.md). Short version:
-
-- **Dark mode primary**, light mode supported via CSS-variable swap on `.dark` class.
-- **Inter** for UI text. **JetBrains Mono** for every number, ticker, price, Greek, time, percentage. Always `tabular-nums`.
-- **Semantic color** bound to meaning: green up/calls/long, red down/puts/short, amber warnings, muted electric-blue accent reserved for focus and selection.
-- **Negative numbers in red**, using the proper minus glyph `−` (U+2212) not the hyphen-minus.
-- **Dense**: 32-36px row heights, 36px inputs, 1px hairline borders. No drop shadows, no glassmorphism, no gradient backgrounds.
-- **Generous whitespace** only around chart sections so data has room to breathe.
-- **No spinners.** Skeleton blocks that match the final layout.
-- **No emoji** in the UI or in code.
-- **No em or en dashes** in prose (house style).
-
-The accent color is a single muted electric-blue `#3b82f6`. It only appears on focus rings, the active sidebar item border, and primary CTAs. It is never used decoratively.
-
-Three custom UI touches worth calling out:
-1. **Animated Greeks.** Net Greek values in the Strategy Builder tween over 300ms when legs change, via a custom `useAnimatedNumber` hook (requestAnimationFrame, ease-out-cubic, respects `prefers-reduced-motion`).
-2. **Custom Greek micro-vizes.** Each Greek card on the Pricer has a bespoke SVG visualization that matches its meaning: probability gauge for delta, bell curve for gamma, vol-sweep histogram for vega, decay curve for theta, slope line for rho. Each renders in under 2ms.
-3. **Cmd/Ctrl+K command palette.** Quick navigation. Type a ticker (NVDA, SPY, etc.) and it opens the Vol Surface for that name. Persistent across pages.
 
 ---
 

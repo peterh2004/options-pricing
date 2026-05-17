@@ -47,13 +47,6 @@ Most online option calculators are toys. They take three inputs, return one numb
 
 I wanted a middle ground I could actually demo: a dense, locally-runnable workbench that gets the math correct, validates it against a reference implementation, and surfaces the results through a UI that doesn't apologize for being dense. The aesthetic targets a Bloomberg/Linear/Stripe feel rather than the typical bright-purple SaaS dashboard.
 
-Engineering goals, in priority order:
-
-1. **Math first.** Closed-form Black-Scholes-Merton with all five Greeks. Cox-Ross-Rubinstein binomial for American options. Monte Carlo with antithetic variates for vanilla and Asian/barrier exotics. Newton-Raphson IV solver with bisection fallback. Every function validated against QuantLib.
-2. **Speed.** Surface compute under 200ms because real desks rebuild surfaces several times per second. Single price under 1ms. MC with 10k antithetic paths under 100ms. Achieved with vectorized NumPy.
-3. **Schemas everywhere.** Pydantic v2 on the backend, Zod-mirrored on the frontend. Every API response is parsed through a schema; no untyped JSON in the React tree.
-4. **Tight UI.** 32-36px row heights, 1px hairlines, mono for every number with `tabular-nums`, semantic color bound to meaning (green up/calls, red down/puts, amber warnings). Custom micro-visualizations for each Greek instead of generic sparklines.
-
 ---
 
 ## Stack

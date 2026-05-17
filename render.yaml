@@ -14,8 +14,9 @@ services:
       - key: PYTHON_VERSION
         value: 3.12.0
       - key: CORS_ORIGINS
-        # Replace with your Vercel URL after the first deploy.
         # Comma-separate multiple origins, no trailing slash.
-        value: https://vollab.vercel.app
+        # Note: editing this in the Render dashboard takes effect immediately;
+        # editing here only affects future Blueprint deploys.
+        value: https://options-pricing-rose.vercel.app
     healthCheckPath: /api/v1/health
     autoDeploy: true

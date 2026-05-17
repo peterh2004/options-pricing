@@ -1,0 +1,21 @@
+# Render Blueprint: one-click deploy for the Vol Lab backend.
+# Sign in at render.com, New + > Blueprint, point at this repo, and Render reads this file.
+# Frontend is deployed separately on Vercel (see frontend/vercel.json + README).
+
+services:
+  - type: web
+    name: vollab-backend
+    runtime: python
+    rootDir: backend
+    plan: free
+    buildCommand: pip install --upgrade pip && pip install -e .
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.0
+      - key: CORS_ORIGINS
+        # Replace with your Vercel URL after the first deploy.
+        # Comma-separate multiple origins, no trailing slash.
+        value: https://vollab.vercel.app
+    healthCheckPath: /api/v1/health
+    autoDeploy: true

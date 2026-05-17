@@ -1,0 +1,50 @@
+[project]
+name = "vollab-backend"
+version = "0.1.0"
+description = "Vol Lab — options pricing and analytics backend"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.115",
+  "uvicorn[standard]>=0.32",
+  "pydantic>=2.9",
+  "pydantic-settings>=2.6",
+  "numpy>=2.1",
+  "scipy>=1.14",
+  "pandas>=2.2",
+  "yfinance>=0.2.50",
+  "sqlalchemy>=2.0",
+  "python-dateutil>=2.9",
+  "httpx>=0.28",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.3",
+  "pytest-asyncio>=0.24",
+  "ruff>=0.7",
+]
+ref = [
+  # QuantLib reference engine for validation. Optional — tests fall back to Hull table values if unavailable.
+  "QuantLib>=1.36",
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["app*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-ra -q --strict-markers"
+markers = [
+  "slow: marks tests as slow",
+  "network: marks tests that require network access (yfinance)",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"

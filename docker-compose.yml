@@ -1,0 +1,26 @@
+services:
+  backend:
+    build: ./backend
+    container_name: vollab-backend
+    ports:
+      - "8000:8000"
+    environment:
+      CORS_ORIGINS: http://localhost:3000
+      DATABASE_URL: sqlite:////data/vollab.db
+    volumes:
+      - vollab-data:/data
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    container_name: vollab-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  vollab-data:

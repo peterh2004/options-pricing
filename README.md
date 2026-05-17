@@ -77,8 +77,6 @@ Caveats specific to the **live demo**:
 - The backend runs on Render's free tier, which sleeps after 15 minutes idle. First request after sleep cold-starts in 30 to 60 seconds. To wake it, open the [Swagger docs](https://vollab-backend.onrender.com/api/v1/docs) first.
 - Yahoo throttles yfinance requests from shared cloud IPs. When that happens the Vol Surface page falls back to demo data so the UI still renders. Real desks use Polygon, IEX, or a direct feed in `backend/app/data/chain.py`.
 
-Treat it as an engineering build that demonstrates fundamentals correctly.
-
 ---
 
 ## Stack
